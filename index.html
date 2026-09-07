@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hangul Type — Learn Romanization</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">한</span>
+      <div>
+        <h1>Hangul Type</h1>
+        <p class="tagline">Learn Korean romanization, one Jamo at a time</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-view="learn" role="tab">Learn</button>
+      <button class="tab" data-view="practice" role="tab">Practice</button>
+      <button class="tab" data-view="words" role="tab">Words</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===================== LEARN VIEW ===================== -->
+    <section id="view-learn" class="view active">
+      <div class="learn-intro">
+        <p>
+          Hangul is built from <strong>40 Jamo</strong> — 19 consonants and 21 vowels.
+          Each Jamo has a fixed romanization <em>sound</em> and a fixed key on the
+          standard <strong>2-set (두벌식)</strong> keyboard — the layout used by Microsoft,
+          Google, and most other Korean IMEs. In practice you type the
+          <strong>2-set key(s)</strong>; the sound is shown below the character.
+        </p>
+        <p>
+          Click cards to <strong>select</strong> the Jamo you want to drill, then hit
+          “Practice selection”.
+        </p>
+      </div>
+
+      <div class="select-bar">
+        <span id="select-count">Click jamo cards to pick which ones to practice</span>
+        <span class="select-actions">
+          <button id="practice-selected" class="btn primary" disabled>Practice selection</button>
+          <button id="clear-selected" class="btn ghost" disabled>Clear</button>
+        </span>
+      </div>
+
+      <h2 class="section-title">Consonants <span class="count">19</span></h2>
+      <div id="consonant-grid" class="jamo-grid"></div>
+
+      <h2 class="section-title">Vowels <span class="count">21</span></h2>
+      <div id="vowel-grid" class="jamo-grid"></div>
+
+      <div class="learn-note">
+        <p>
+          <strong>Tip:</strong> Romanization depends on position. A consonant at the
+          <em>start</em> of a syllable uses its initial value (e.g. ㄱ → g), while at the
+          <em>end</em> it uses its final value (e.g. ㄱ → k, as in 강 → gang).
+          The <em>Words</em> mode practices full syllables and words.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== PRACTICE VIEW ===================== -->
+    <section id="view-practice" class="view">
+      <div class="game-hud">
+        <div class="hud-stat"><span class="hud-label">Score</span><span id="p-score" class="hud-value">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Streak</span><span id="p-streak" class="hud-value">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Progress</span>
+          <div class="progress"><div id="p-progress" class="progress-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="game-stage" id="p-stage">
+        <div class="prompt-label">Type the 2-set key(s) for this Jamo</div>
+        <div class="jamo-display" id="p-jamo">ㄱ</div>
+        <div class="jamo-roman" id="p-roman">g</div>
+        <div class="jamo-hint" id="p-hint">consonant</div>
+        <input id="p-input" class="answer-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…">
+        <div class="feedback" id="p-feedback"></div>
+      </div>
+
+      <div class="game-controls">
+        <button id="p-start" class="btn primary">Start</button>
+        <button id="p-skip" class="btn ghost" disabled>Skip</button>
+      </div>
+    </section>
+
+    <!-- ===================== WORDS VIEW ===================== -->
+    <section id="view-words" class="view">
+      <div class="game-hud">
+        <div class="hud-stat"><span class="hud-label">Score</span><span id="w-score" class="hud-value">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Streak</span><span id="w-streak" class="hud-value">0</span></div>
+        <div class="hud-stat"><span class="hud-label">Progress</span>
+          <div class="progress"><div id="w-progress" class="progress-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="game-stage" id="w-stage">
+        <div class="prompt-label">Type the 2-set keys for this word</div>
+        <div class="word-display" id="w-word">안녕하세요</div>
+        <div class="jamo-hint" id="w-hint"></div>
+        <input id="w-input" class="answer-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…">
+        <div class="feedback" id="w-feedback"></div>
+      </div>
+
+      <div class="game-controls">
+        <button id="w-start" class="btn primary">Start</button>
+        <button id="w-skip" class="btn ghost" disabled>Skip</button>
+      </div>
+    </section>
+
+    <!-- ===================== RESULTS OVERLAY ===================== -->
+    <div id="results" class="results-overlay hidden">
+      <div class="results-card">
+        <h2 id="r-title">Session complete!</h2>
+        <p id="r-sub" class="r-sub"></p>
+        <div class="r-stats">
+          <div class="r-stat"><span id="r-correct" class="r-num">0</span><span class="r-cap">correct</span></div>
+          <div class="r-stat"><span id="r-wrong" class="r-num">0</span><span class="r-cap">wrong</span></div>
+          <div class="r-stat"><span id="r-best" class="r-num">0</span><span class="r-cap">best streak</span></div>
+        </div>
+        <div class="r-mistakes" id="r-mistakes"></div>
+        <div class="r-actions">
+          <button id="r-again" class="btn primary">Play again</button>
+          <button id="r-learn" class="btn ghost">Review chart</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="foot">
+    Romanization per the official <em>Romanization of Korean</em> standard (2000).
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
