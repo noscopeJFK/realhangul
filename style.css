@@ -140,6 +140,14 @@ main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: 28px 20p
 .progress { width: 140px; height: 8px; background: var(--panel-2); border-radius: 6px; overflow: hidden; margin: 8px auto 0; }
 .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-2), var(--good)); transition: width 0.25s ease; }
 
+/* ---------- Practice mode toggle ---------- */
+.mode-toggle { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+.mode-toggle .btn { padding: 8px 14px; font-size: 13px; }
+.mode-toggle .btn.active {
+  background: var(--accent-2); border-color: var(--accent-2);
+  color: #08243a; font-weight: 700;
+}
+
 /* ---------- Game stage ---------- */
 .game-stage {
   background: var(--panel); border: 1px solid var(--border);
@@ -155,7 +163,7 @@ main { flex: 1; width: 100%; max-width: 960px; margin: 0 auto; padding: 28px 20p
   font-size: 64px; line-height: 1.2; font-weight: 600;
   min-height: 80px; display: grid; place-items: center; word-break: keep-all;
 }
-.jamo-hint { color: var(--muted); font-size: 14px; margin-top: 10px; text-transform: capitalize; }
+.jamo-hint { color: var(--muted); font-size: 14px; margin-top: 10px; }
 .jamo-roman {
   font-size: 24px; font-weight: 700; color: var(--accent-2);
   letter-spacing: 1px; margin-top: 12px;

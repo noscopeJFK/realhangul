@@ -31,7 +31,7 @@ const VOWELS = {
 const FINAL = {
   'ㄱ': 'k', 'ㄲ': 'kk', 'ㄳ': 'ks', 'ㄴ': 'n', 'ㄵ': 'nj', 'ㄶ': 'nh',
   'ㄷ': 't', 'ㄸ': 'tt', 'ㄹ': 'l', 'ㄺ': 'lk', 'ㄻ': 'lm', 'ㄼ': 'lb',
-  'ㄽ': 'ls', 'ㄾ': 'lt', 'ㄿ': 'lp', 'ㅀ': 'lh', 'ㅁ': 'm', 'ㅂ': 'p',
+  'ㄽ': 'ls', 'ㄾ': 'lt', 'ㄿ': 'lp', 'ㅁ': 'm', 'ㅂ': 'p', 'ㅄ': 'bs',
   'ㅅ': 't', 'ㅆ': 't', 'ㅇ': 'ng', 'ㅈ': 't', 'ㅊ': 't', 'ㅋ': 'k',
   'ㅌ': 't', 'ㅍ': 'p', 'ㅎ': 't',
 };
@@ -79,10 +79,10 @@ const JAMO = [
   { char: 'ㅜ', roman: 'u',   type: 'vowel', hint: 'as in "rule"' },
   { char: 'ㅝ', roman: 'wo',  type: 'vowel', hint: 'as in "wore"' },
   { char: 'ㅞ', roman: 'we',  type: 'vowel', hint: 'as in "we"' },
-  { char: 'ㅟ', roman: 'wi',  type: 'vowel', hint: 'as in "we" (short)' },
+  { char: 'ㅟ', roman: 'wi',  type: 'vowel', hint: 'as in "wee"' },
   { char: 'ㅠ', roman: 'yu',  type: 'vowel', hint: 'as in "you"' },
-  { char: 'ㅡ', roman: 'eu',  type: 'vowel', hint: 'as in "ur" (German)' },
-  { char: 'ㅢ', roman: 'ui',  type: 'vowel', hint: 'as in "we" + "i"' },
+  { char: 'ㅡ', roman: 'eu',  type: 'vowel', hint: 'as in "but" (American)' },
+  { char: 'ㅢ', roman: 'ui',  type: 'vowel', hint: 'as in "wee" + "i"' },
   { char: 'ㅣ', roman: 'i',   type: 'vowel', hint: 'as in "machine"' },
 ];
 
@@ -101,10 +101,11 @@ const VOWEL_ORDER = [
 ];
 
 // Final-consonant order in the syllable block (index 0 = no final).
-// Note: ㄳ (ks) exists in the syllable block but not as a standalone modern Jamo.
+// Note: ㄳ (ks) and ㅄ (bs) exist in the syllable block but not as standalone
+// modern Jamo; ㅀ (lh) is NOT a valid syllable-block final.
 const FINAL_ORDER = [
   null, 'ㄱ', 'ㄲ', 'ㄳ', 'ㄴ', 'ㄵ', 'ㄶ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㄺ', 'ㄻ', 'ㄼ',
-  'ㄽ', 'ㄾ', 'ㄿ', 'ㅀ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ',
+  'ㄽ', 'ㄾ', 'ㄿ', 'ㅁ', 'ㅂ', 'ㅄ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ',
   'ㅍ', 'ㅎ',
 ];
 
@@ -160,6 +161,8 @@ const KEYS_2SET = {
   'ㅕ': 'u', 'ㅖ': 'jp', 'ㅗ': 'h', 'ㅘ': 'hk', 'ㅙ': 'ho', 'ㅚ': 'hi',
   'ㅛ': 'y', 'ㅜ': 'n', 'ㅝ': 'nk', 'ㅞ': 'no', 'ㅟ': 'ni', 'ㅠ': 'b',
   'ㅡ': 'm', 'ㅢ': 'ml', 'ㅣ': 'l',
+  // Double final (batchim) — typed as its two component keys.
+  'ㅄ': 'qt',
 };
 
 // 2-set key sequence for a single Hangul syllable (initial + vowel + final).
@@ -184,6 +187,7 @@ function keys2setHangul(text) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     JAMO, INITIAL, VOWELS, FINAL, KEYS_2SET,
+    INITIAL_ORDER, VOWEL_ORDER, FINAL_ORDER,
     romanizeHangul, romanizeSyllable, decomposeSyllable,
     keys2setHangul, keys2setSyllable,
   };

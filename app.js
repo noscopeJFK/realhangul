@@ -327,17 +327,23 @@
   });
 
   // ---- Practice game (Jamo) ----------------------------------------------
-  // Answers are 2-set (두벌식) IME keys — the same keys a standard
-  // Microsoft/Google Korean IME expects. Romanization is shown as the sound.
+  // Two answer modes:
+  //  - keys:  type the 2-set (두벌식) IME keys — the same keys a standard
+  //           Microsoft/Google Korean IME expects.
+  //  - roman: type the official romanization.
+  let practiceMode = 'keys';
+
   const practiceGame = makeGame({
     items: JAMO,
     len: PRACTICE_LEN,
-    answerOf: (j) => KEYS_2SET[j.char],
+    answerOf: (j) => (practiceMode === 'keys' ? KEYS_2SET[j.char] : j.roman),
     displayOf: (j) => {
       $('p-jamo').textContent = j.char;
-      $('p-roman').textContent = j.roman;
+      $('p-roman').textContent = practiceMode === 'keys' ? j.roman : KEYS_2SET[j.char];
     },
-    hintOf: (j) => j.type + '  ·  sounds like “' + j.roman + '”',
+    hintOf: (j) => practiceMode === 'keys'
+      ? j.type + '  ·  ' + j.hint
+      : j.type,
     scoreEl: $('p-score'),
     streakEl: $('p-streak'),
     progressEl: $('p-progress'),
@@ -348,6 +354,18 @@
     skipBtn: $('p-skip'),
     onDone: (s) => showResults('Practice', s),
   });
+
+  function setPracticeMode(mode) {
+    practiceMode = mode;
+    $('p-mode-keys').classList.toggle('active', mode === 'keys');
+    $('p-mode-roman').classList.toggle('active', mode === 'roman');
+    $('p-prompt').textContent = mode === 'keys'
+      ? 'Type the 2-set key(s) for this Jamo'
+      : 'Type the romanization for this Jamo';
+    practiceGame.reset();
+  }
+  $('p-mode-keys').addEventListener('click', () => setPracticeMode('keys'));
+  $('p-mode-roman').addEventListener('click', () => setPracticeMode('roman'));
 
   // ---- Words game ---------------------------------------------------------
   // Answers are the 2-set key sequence for the whole word.

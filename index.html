@@ -30,8 +30,9 @@
           Hangul is built from <strong>40 Jamo</strong> — 19 consonants and 21 vowels.
           Each Jamo has a fixed romanization <em>sound</em> and a fixed key on the
           standard <strong>2-set (두벌식)</strong> keyboard — the layout used by Microsoft,
-          Google, and most other Korean IMEs. In practice you type the
-          <strong>2-set key(s)</strong>; the sound is shown below the character.
+          Google, and most other Korean IMEs. In practice you can drill either
+          the <strong>2-set key(s)</strong> or the <strong>romanization</strong> —
+          switch with the toggle above the game.
         </p>
         <p>
           Click cards to <strong>select</strong> the Jamo you want to drill, then hit
@@ -73,8 +74,13 @@
         </div>
       </div>
 
+      <div class="mode-toggle" role="group" aria-label="Answer mode">
+        <button id="p-mode-keys" class="btn ghost active" type="button">Type the keys</button>
+        <button id="p-mode-roman" class="btn ghost" type="button">Type the romanization</button>
+      </div>
+
       <div class="game-stage" id="p-stage">
-        <div class="prompt-label">Type the 2-set key(s) for this Jamo</div>
+        <div class="prompt-label" id="p-prompt">Type the 2-set key(s) for this Jamo</div>
         <div class="jamo-display" id="p-jamo">ㄱ</div>
         <div class="jamo-roman" id="p-roman">g</div>
         <div class="jamo-hint" id="p-hint">consonant</div>
