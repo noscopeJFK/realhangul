@@ -1,7 +1,7 @@
 # realhangul
 
 Hangul training, similar to [realkana](https://github.com/takahirox/realkana).
-Open `index.html` in a browser — no build step, no dependencies.
+Open `index.html` in a browser.
 
 ## What it teaches
 
