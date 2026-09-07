@@ -151,19 +151,71 @@ function romanizeHangul(text) {
 // Korean IMEs on QWERTY keyboards. Each Jamo maps to the exact key
 // sequence a user types. Compound vowels are typed as the sequence of
 // their component keys (e.g. ㅘ = h + k, ㅢ = m + l).
+//
+// Like a real Korean IME, the number row produces jamo —
+// 1=ㅂ 2=ㅈ 3=ㄱ 4=ㄷ 5=ㅅ 6=ㅛ 7=ㅑ 8=ㅐ 9=ㅔ 0=ㅕ — and shift+number
+// is what types the actual digit. Tense consonants are typed as their
+// base key twice (ㄲ = 3 3, ㅃ = 1 1, …) or with Shift+letter
+// (ㄲ = Shift+R, ㅃ = Shift+Q, …) — the same as the MS/Google IMEs.
 const KEYS_2SET = {
   // Consonants
-  'ㄱ': 'r', 'ㄲ': '1', 'ㄴ': 's', 'ㄷ': 'e', 'ㄸ': '2', 'ㄹ': 'f',
-  'ㅁ': 'a', 'ㅂ': 'q', 'ㅃ': '3', 'ㅅ': 't', 'ㅆ': '4', 'ㅇ': 'd',
-  'ㅈ': 'w', 'ㅉ': '5', 'ㅊ': 'c', 'ㅋ': 'z', 'ㅌ': 'x', 'ㅍ': 'v', 'ㅎ': 'g',
+  'ㄱ': '3', 'ㄲ': '33', 'ㄴ': 's', 'ㄷ': '4', 'ㄸ': '44', 'ㄹ': 'f',
+  'ㅁ': 'a', 'ㅂ': '1', 'ㅃ': '11', 'ㅅ': '5', 'ㅆ': '55', 'ㅇ': 'd',
+  'ㅈ': '2', 'ㅉ': '22', 'ㅊ': 'q', 'ㅋ': 'w', 'ㅌ': 'e', 'ㅍ': 'r', 'ㅎ': 't',
   // Vowels
-  'ㅏ': 'k', 'ㅐ': 'o', 'ㅑ': 'i', 'ㅒ': 'io', 'ㅓ': 'j', 'ㅔ': 'p',
-  'ㅕ': 'u', 'ㅖ': 'jp', 'ㅗ': 'h', 'ㅘ': 'hk', 'ㅙ': 'ho', 'ㅚ': 'hi',
+  'ㅏ': 'k', 'ㅐ': 'o', 'ㅑ': 'p', 'ㅒ': 'po', 'ㅓ': 'u', 'ㅔ': 'i',
+  'ㅕ': '0', 'ㅖ': '0l', 'ㅗ': 'h', 'ㅘ': 'hk', 'ㅙ': 'ho', 'ㅚ': 'hi',
   'ㅛ': 'y', 'ㅜ': 'n', 'ㅝ': 'nk', 'ㅞ': 'no', 'ㅟ': 'ni', 'ㅠ': 'b',
   'ㅡ': 'm', 'ㅢ': 'ml', 'ㅣ': 'l',
-  // Double final (batchim) — typed as its two component keys.
-  'ㅄ': 'qt',
+  // Double final (batchim) — typed as its two component keys (ㅂ + ㅅ).
+  'ㅄ': '15',
 };
+
+// Alternate keys that produce the same Jamo in the standard 2-set layout.
+// Two kinds of aliases:
+//  - Same-key aliases: ㅎ works on both t and g, ㅛ on both y and 6, etc.
+//  - Shift+letter aliases: the MS/Google IMEs let you type tense consonants
+//    and two compound vowels with Shift+letter instead of doubled/sequence keys:
+//    ㅃ=Shift+Q  ㅉ=Shift+W  ㄸ=Shift+E  ㄲ=Shift+R  ㅆ=Shift+T
+//    ㅒ=Shift+O  ㅖ=Shift+P
+// Input checking accepts the canonical key or any alias.
+const KEY_ALIASES = {
+  'ㅊ': ['c'], 'ㅋ': ['z'], 'ㅌ': ['x'], 'ㅍ': ['v'], 'ㅎ': ['g'],
+  'ㅛ': ['6'], 'ㅐ': ['8'], 'ㅑ': ['7'], 'ㅔ': ['9'],
+  'ㅃ': ['Q'], 'ㅉ': ['W'], 'ㄸ': ['E'], 'ㄲ': ['R'], 'ㅆ': ['T'],
+  'ㅒ': ['O'], 'ㅖ': ['P'],
+};
+
+// All valid 2-set key sequences for one syllable (canonical keys plus
+// every alias combination).
+function keySequencesSyllable(ch) {
+  const parts = decomposeSyllable(ch);
+  if (!parts) return [ch]; // not a composed syllable
+  const jamo = [parts.initial, parts.vowel];
+  if (parts.final) jamo.push(parts.final);
+  let out = [''];
+  for (const j of jamo) {
+    const base = KEYS_2SET[j] || '';
+    const alts = KEY_ALIASES[j] || [];
+    const opts = [base, ...alts];
+    out = out.flatMap((p) => opts.map((k) => p + k));
+  }
+  return out;
+}
+
+// True if `typed` is a valid 2-set key sequence for the Hangul `text`
+// (accepts every alias combination, e.g. both "tks" and "gks" for 한,
+// both "33" and "R" for ㄲ). Case-sensitive: lowercase = regular key,
+// uppercase = Shift+letter (tense consonants / compound vowels).
+function matches2set(text, typed) {
+  const t = String(typed).trim();
+  const seqs = Array.from(String(text), keySequencesSyllable);
+  const ok = (i, rest) => {
+    if (i === seqs.length) return rest === '';
+    return seqs[i].some((s) => rest.startsWith(s) && ok(i + 1, rest.slice(s.length)));
+  };
+  return ok(0, t);
+}
 
 // 2-set key sequence for a single Hangul syllable (initial + vowel + final).
 function keys2setSyllable(ch) {
@@ -190,5 +242,6 @@ if (typeof module !== 'undefined' && module.exports) {
     INITIAL_ORDER, VOWEL_ORDER, FINAL_ORDER,
     romanizeHangul, romanizeSyllable, decomposeSyllable,
     keys2setHangul, keys2setSyllable,
+    KEY_ALIASES, keySequencesSyllable, matches2set,
   };
 }

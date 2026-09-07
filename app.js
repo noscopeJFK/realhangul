@@ -202,14 +202,23 @@
       render();
     }
 
+    // Key answers accept any valid 2-set sequence for the item's Hangul
+    // text (canonical keys or aliases, case-sensitive); romanization
+    // answers match case-insensitively.
+    function isCorrect(item, typed) {
+      return cfg.isKeyAnswer(item)
+        ? matches2set(cfg.keyTextOf(item), typed)
+        : typed.toLowerCase() === cfg.answerOf(item).toLowerCase();
+    }
+
     function check() {
       if (!state.active || state.answered) return;
       const item = state.items[state.idx];
       const expected = cfg.answerOf(item).toLowerCase();
-      const typed = cfg.inputEl.value.trim().toLowerCase();
+      const typed = cfg.inputEl.value.trim();
       if (!typed) return;
       state.answered = true;
-      const ok = typed === expected;
+      const ok = isCorrect(item, typed);
       if (ok) {
         state.score += 1;
         state.streak += 1;
@@ -264,8 +273,7 @@
     });
     cfg.inputEl.addEventListener('input', () => {
       if (!state.active || state.answered) return;
-      const expected = cfg.answerOf(state.items[state.idx]).toLowerCase();
-      if (cfg.inputEl.value.trim().toLowerCase() === expected) check();
+      if (isCorrect(state.items[state.idx], cfg.inputEl.value.trim())) check();
     });
     cfg.startBtn.addEventListener('click', start);
     cfg.skipBtn.addEventListener('click', skip);
@@ -337,6 +345,8 @@
     items: JAMO,
     len: PRACTICE_LEN,
     answerOf: (j) => (practiceMode === 'keys' ? KEYS_2SET[j.char] : j.roman),
+    isKeyAnswer: () => practiceMode === 'keys',
+    keyTextOf: (j) => j.char,
     displayOf: (j) => {
       $('p-jamo').textContent = j.char;
       $('p-roman').textContent = practiceMode === 'keys' ? j.roman : KEYS_2SET[j.char];
@@ -373,6 +383,8 @@
     items: WORDS,
     len: WORDS_LEN,
     answerOf: (it) => keys2setHangul(it.w),
+    isKeyAnswer: () => true,
+    keyTextOf: (it) => it.w,
     displayOf: (it) => { $('w-word').textContent = it.w; },
     hintOf: (it) => 'sounds like “' + romanizeHangul(it.w) + '”',
     scoreEl: $('w-score'),

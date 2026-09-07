@@ -14,7 +14,14 @@ every Hangul syllable — before moving on to whole words.
   then practice just those.
 - **Practice** — drills the jamo in two answer modes:
   - **Type the keys** — see the letter and its sound, type the 2-set key(s)
-    (the same keys a standard Microsoft/Google Korean IME expects).
+    (the same keys a standard Microsoft/Google Korean IME expects —
+    including the number row, which types ㅂ ㅈ ㄱ ㄷ ㅅ ㅛ ㅑ ㅐ ㅔ ㅕ,
+    and doubled keys for tense consonants like ㄲ = `3 3`).
+    Alternate valid keys are accepted (e.g. ㅎ on `t` or `g`).
+    Tense consonants and two compound vowels also accept the
+    **Shift+letter** form used by the MS/Google IMEs:
+    ㅃ = `Shift+Q`, ㅉ = `Shift+W`, ㄸ = `Shift+E`, ㄲ = `Shift+R`,
+    ㅆ = `Shift+T`, ㅒ = `Shift+O`, ㅖ = `Shift+P`.
   - **Type the romanization** — see the letter and its key, type the official
     romanization.
 - **Words** — type the 2-set key sequence for common words.
