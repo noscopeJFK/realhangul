@@ -204,8 +204,9 @@
       render();
     }
 
-    // Answers are Dubeolsik (두벌식) key sequences: any valid sequence for the
-    // item's Hangul text (canonical keys or aliases, case-sensitive).
+    // Answers are layout key sequences (KEYS_2SET in data.js): any valid
+    // sequence for the item's Hangul text (canonical keys or aliases,
+    // case-sensitive).
     function isCorrect(item, typed) {
       return matches2set(cfg.keyTextOf(item), typed);
     }
@@ -333,8 +334,7 @@
   });
 
   // ---- Practice game (Jamo) ----------------------------------------------
-  // Answers are Dubeolsik (두벌식) IME keys — the same keys a standard
-  // Microsoft/Google Korean IME expects.
+  // Answers are the key sequences of the layout in 1.png (see KEYS_2SET).
   const practiceGame = makeGame({
     items: JAMO,
     len: PRACTICE_LEN,

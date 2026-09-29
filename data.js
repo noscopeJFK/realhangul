@@ -146,44 +146,40 @@ function romanizeHangul(text) {
   return out;
 }
 
-// ---- 2-set (두벌식) IME key map -------------------------------------------
-// The standard 2-set layout used by Microsoft, Google, and most other
-// Korean IMEs on QWERTY keyboards. Each Jamo maps to the exact key
-// sequence a user types. Compound vowels are typed as the sequence of
-// their component keys (e.g. ㅘ = h + k, ㅢ = m + l).
+// ---- IME key map (the layout in 1.png) ------------------------------------
+// The Dubeolsik-style (두벌식) layout shown in 1.png — machine-readable
+// form in table.csv. Each Jamo maps to the exact key sequence a user
+// types. Compound vowels are typed as the sequence of their component
+// keys (e.g. ㅘ = h + k, ㅢ = m + l); ㅒ and ㅖ also have direct
+// Shift+letter keys (Shift+O, Shift+P).
 //
-// Like a real Korean IME, the number row produces jamo —
-// 1=ㅂ 2=ㅈ 3=ㄱ 4=ㄷ 5=ㅅ 6=ㅛ 7=ㅑ 8=ㅐ 9=ㅔ 0=ㅕ — and shift+number
-// is what types the actual digit. Tense consonants are typed as their
-// base key twice (ㄲ = 3 3, ㅃ = 1 1, …) or with Shift+letter
-// (ㄲ = Shift+R, ㅃ = Shift+Q, …) — the same as the MS/Google IMEs.
+// Tense consonants use Shift+letter (ㄲ = Shift+R, ㅃ = Shift+Q, …);
+// the doubled base key is accepted as an alias (ㄲ = r + r). The number
+// row types plain digits — no Jamo live on it in this layout.
 const KEYS_2SET = {
   // Consonants
-  'ㄱ': '3', 'ㄲ': '33', 'ㄴ': 's', 'ㄷ': '4', 'ㄸ': '44', 'ㄹ': 'f',
-  'ㅁ': 'a', 'ㅂ': '1', 'ㅃ': '11', 'ㅅ': '5', 'ㅆ': '55', 'ㅇ': 'd',
-  'ㅈ': '2', 'ㅉ': '22', 'ㅊ': 'q', 'ㅋ': 'w', 'ㅌ': 'e', 'ㅍ': 'r', 'ㅎ': 't',
+  'ㄱ': 'r', 'ㄲ': 'R', 'ㄴ': 's', 'ㄷ': 'e', 'ㄸ': 'E', 'ㄹ': 'f',
+  'ㅁ': 'a', 'ㅂ': 'q', 'ㅃ': 'Q', 'ㅅ': 't', 'ㅆ': 'T', 'ㅇ': 'd',
+  'ㅈ': 'w', 'ㅉ': 'W', 'ㅊ': 'c', 'ㅋ': 'z', 'ㅌ': 'x', 'ㅍ': 'v', 'ㅎ': 'g',
   // Vowels
-  'ㅏ': 'k', 'ㅐ': 'o', 'ㅑ': 'p', 'ㅒ': 'po', 'ㅓ': 'u', 'ㅔ': 'i',
-  'ㅕ': '0', 'ㅖ': '0l', 'ㅗ': 'h', 'ㅘ': 'hk', 'ㅙ': 'ho', 'ㅚ': 'hi',
-  'ㅛ': 'y', 'ㅜ': 'n', 'ㅝ': 'nk', 'ㅞ': 'no', 'ㅟ': 'ni', 'ㅠ': 'b',
+  'ㅏ': 'k', 'ㅐ': 'o', 'ㅑ': 'i', 'ㅒ': 'O', 'ㅓ': 'j', 'ㅔ': 'p',
+  'ㅕ': 'u', 'ㅖ': 'P', 'ㅗ': 'h', 'ㅘ': 'hk', 'ㅙ': 'ho', 'ㅚ': 'hp',
+  'ㅛ': 'y', 'ㅜ': 'n', 'ㅝ': 'hj', 'ㅞ': 'no', 'ㅟ': 'nl', 'ㅠ': 'b',
   'ㅡ': 'm', 'ㅢ': 'ml', 'ㅣ': 'l',
   // Double final (batchim) — typed as its two component keys (ㅂ + ㅅ).
-  'ㅄ': '15',
+  'ㅄ': 'qt',
 };
 
-// Alternate keys that produce the same Jamo in the standard 2-set layout.
+// Alternate key sequences that produce the same Jamo in this layout.
 // Two kinds of aliases:
-//  - Same-key aliases: ㅎ works on both t and g, ㅛ on both y and 6, etc.
-//  - Shift+letter aliases: the MS/Google IMEs let you type tense consonants
-//    and two compound vowels with Shift+letter instead of doubled/sequence keys:
-//    ㅃ=Shift+Q  ㅉ=Shift+W  ㄸ=Shift+E  ㄲ=Shift+R  ㅆ=Shift+T
-//    ㅒ=Shift+O  ㅖ=Shift+P
+//  - Doubled-key aliases for tense consonants (ㅃ = q + q, …) — a
+//    convenience for learners; the canonical form is Shift+letter.
+//  - Component-sequence aliases for ㅒ and ㅖ (ㅒ = i + l, ㅖ = p + l);
+//    the canonical form is the direct Shift+O / Shift+P key.
 // Input checking accepts the canonical key or any alias.
 const KEY_ALIASES = {
-  'ㅊ': ['c'], 'ㅋ': ['z'], 'ㅌ': ['x'], 'ㅍ': ['v'], 'ㅎ': ['g'],
-  'ㅛ': ['6'], 'ㅐ': ['8'], 'ㅑ': ['7'], 'ㅔ': ['9'],
-  'ㅃ': ['Q'], 'ㅉ': ['W'], 'ㄸ': ['E'], 'ㄲ': ['R'], 'ㅆ': ['T'],
-  'ㅒ': ['O'], 'ㅖ': ['P'],
+  'ㅃ': ['qq'], 'ㅉ': ['ww'], 'ㄸ': ['ee'], 'ㄲ': ['rr'], 'ㅆ': ['tt'],
+  'ㅒ': ['il'], 'ㅖ': ['pl'],
 };
 
 // All valid 2-set key sequences for one syllable (canonical keys plus
@@ -203,10 +199,10 @@ function keySequencesSyllable(ch) {
   return out;
 }
 
-// True if `typed` is a valid 2-set key sequence for the Hangul `text`
-// (accepts every alias combination, e.g. both "tks" and "gks" for 한,
-// both "33" and "R" for ㄲ). Case-sensitive: lowercase = regular key,
-// uppercase = Shift+letter (tense consonants / compound vowels).
+// True if `typed` is a valid key sequence for the Hangul `text` in this
+// layout (accepts every alias combination, e.g. both "RmT" and "rrmT"
+// for 끝). Case-sensitive: lowercase = regular key, uppercase =
+// Shift+letter (tense consonants / ㅒ / ㅖ).
 function matches2set(text, typed) {
   const t = String(typed).trim();
   const seqs = Array.from(String(text), keySequencesSyllable);

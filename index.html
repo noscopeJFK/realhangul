@@ -28,10 +28,11 @@
       <div class="learn-intro">
         <p>
           Hangul is built from <strong>40 Jamo</strong> — 19 consonants and 21 vowels.
-          Each Jamo has a fixed romanization <em>sound</em> and a fixed key on the
-          standard <strong>Dubeolsik (두벌식)</strong> keyboard — the layout used by Microsoft,
-          Google, and most other Korean IMEs. In Practice you type each Jamo’s
-          <strong>Dubeolsik key(s)</strong> — exactly what a real Korean IME expects.
+          Each Jamo has a fixed romanization <em>sound</em> and a fixed key on this
+          app’s <strong>Dubeolsik-style (두벌식)</strong> keyboard layout (see <code>1.png</code>).
+          In Practice you type each Jamo’s <strong>key(s)</strong> for that layout — tense
+          consonants use Shift+letter (e.g. ㅃ = <code>Shift+Q</code>), and compound vowels
+          are typed as their component keys (e.g. ㅘ = <code>h k</code>).
         </p>
         <p>
           Click cards to <strong>select</strong> the Jamo you want to drill, then hit
@@ -75,7 +76,7 @@
       </div>
 
       <div class="game-stage" id="p-stage">
-        <div class="prompt-label" id="p-prompt">Type the Dubeolsik (두벌식) key(s) for this Jamo</div>
+        <div class="prompt-label" id="p-prompt">Type the key(s) for this Jamo</div>
         <div class="jamo-display" id="p-jamo">ㄱ</div>
         <div class="jamo-hint" id="p-hint">consonant</div>
         <input id="p-input" class="answer-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…">
@@ -98,7 +99,7 @@
       </div>
 
       <div class="game-stage" id="w-stage">
-        <div class="prompt-label">Type the Dubeolsik (두벌식) keys for this word</div>
+        <div class="prompt-label">Type the keys for this word</div>
         <div class="word-display" id="w-word">안녕하세요</div>
         <div class="jamo-hint" id="w-hint"></div>
         <input id="w-input" class="answer-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…">
