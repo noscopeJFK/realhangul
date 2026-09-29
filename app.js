@@ -125,6 +125,13 @@
     $('clear-selected').disabled = n === 0;
   }
 
+  // Render a key sequence readably: 'Q' -> 'shift+q', 'RmT' -> 'shift+r m shift+t'.
+  function fmtKeys(s) {
+    return s.split('')
+      .map((c) => (c >= 'A' && c <= 'Z' ? 'shift+' + c.toLowerCase() : c))
+      .join(' ');
+  }
+
   // ---- Game engine (shared by practice + words) ---------------------------
   function makeGame(cfg) {
     // cfg: { items, answerOf, displayOf, hintOf, keyTextOf, scoreEl, streakEl,
@@ -214,7 +221,7 @@
     function check() {
       if (!state.active || state.answered) return;
       const item = state.items[state.idx];
-      const expected = cfg.answerOf(item).toLowerCase();
+      const expected = cfg.answerOf(item);
       const typed = cfg.inputEl.value.trim();
       if (!typed) return;
       state.answered = true;
@@ -232,7 +239,7 @@
         state.wrong += 1;
         state.mistakes.push({ item, expected, typed });
         cfg.inputEl.className = 'answer-input wrong';
-        cfg.feedbackEl.textContent = '✗ It’s “' + expected + '”';
+        cfg.feedbackEl.textContent = '✗ It’s “' + fmtKeys(expected) + '”';
         cfg.feedbackEl.className = 'feedback bad';
       }
       updateHud();
@@ -252,7 +259,7 @@
     function skip() {
       if (!state.active || state.answered) return;
       const item = state.items[state.idx];
-      const expected = cfg.answerOf(item).toLowerCase();
+      const expected = cfg.answerOf(item);
       state.streak = 0;
       state.wrong += 1;
       state.mistakes.push({ item, expected, typed: '(skipped)' });
@@ -316,7 +323,7 @@
         const label = m.item.w ? (m.item.w + '  ·  ' + m.item.m) : (m.item.char + '  ·  ' + m.item.type);
         row.innerHTML =
           '<span class="m-ch">' + label + '</span>' +
-          '<span><span class="m-ans">' + m.typed + '</span> → <span class="m-correct">' + m.expected + '</span></span>';
+          '<span><span class="m-ans">' + (m.typed === '(skipped)' ? m.typed : fmtKeys(m.typed)) + '</span> → <span class="m-correct">' + fmtKeys(m.expected) + '</span></span>';
         mk.appendChild(row);
       });
     }
