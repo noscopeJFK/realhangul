@@ -74,10 +74,12 @@
     if (name === 'words') focusInput($('w-input'));
   }
   tabs.forEach((t) => t.addEventListener('click', () => {
-    // Opening the Practice tab directly always drills the full Jamo set;
-    // a subset is only used when launched from the Learn selection.
-    if (t.dataset.view === 'practice') practiceGame.setItems(JAMO);
-    showView(t.dataset.view);
+    const view = t.dataset.view;
+    // No Start button: opening a game tab with no active session starts one.
+    // Practice defaults to the full Jamo set; a Learn selection starts its own.
+    if (view === 'practice' && !practiceGame.isActive()) practiceGame.setItems(JAMO);
+    if (view === 'words' && !wordsGame.isActive()) wordsGame.start();
+    showView(view);
   }));
 
   // ---- Learn chart --------------------------------------------------------
@@ -125,8 +127,9 @@
 
   // ---- Game engine (shared by practice + words) ---------------------------
   function makeGame(cfg) {
-    // cfg: { items, answerOf, displayOf, hintOf, scoreEl, streakEl, progressEl,
-    //        inputEl, feedbackEl, stageEl, startBtn, skipBtn, len, onDone }
+    // cfg: { items, answerOf, displayOf, hintOf, keyTextOf, scoreEl, streakEl,
+    //        progressEl, inputEl, feedbackEl, stageEl, skipBtn, len, onDone }
+    // There is no Start button — start()/setItems() begin a session immediately.
     const state = {
       items: [],
       idx: 0,
@@ -162,7 +165,6 @@
       state.answered = false;
       updateHud();
       render();
-      cfg.startBtn.disabled = false;
       cfg.skipBtn.disabled = true;
       cfg.inputEl.value = '';
       cfg.inputEl.className = 'answer-input';
@@ -194,21 +196,18 @@
       focusInput(cfg.inputEl);
     }
 
+    // Begin a fresh session immediately (no Start button).
     function start() {
       reset();
       state.active = true;
-      cfg.startBtn.disabled = true;
       cfg.skipBtn.disabled = false;
       render();
     }
 
-    // Key answers accept any valid 2-set sequence for the item's Hangul
-    // text (canonical keys or aliases, case-sensitive); romanization
-    // answers match case-insensitively.
+    // Answers are Dubeolsik (두벌식) key sequences: any valid sequence for the
+    // item's Hangul text (canonical keys or aliases, case-sensitive).
     function isCorrect(item, typed) {
-      return cfg.isKeyAnswer(item)
-        ? matches2set(cfg.keyTextOf(item), typed)
-        : typed.toLowerCase() === cfg.answerOf(item).toLowerCase();
+      return matches2set(cfg.keyTextOf(item), typed);
     }
 
     function check() {
@@ -263,7 +262,6 @@
     function finish() {
       state.active = false;
       cfg.skipBtn.disabled = true;
-      cfg.startBtn.disabled = false;
       cfg.inputEl.disabled = true;
       cfg.onDone(state);
     }
@@ -275,16 +273,16 @@
       if (!state.active || state.answered) return;
       if (isCorrect(state.items[state.idx], cfg.inputEl.value.trim())) check();
     });
-    cfg.startBtn.addEventListener('click', start);
     cfg.skipBtn.addEventListener('click', skip);
 
+    // Swap the item pool and start a session with it immediately.
     function setItems(items) {
       cfg.items = items;
-      reset();
+      start();
     }
 
     reset();
-    return { start, reset, setItems };
+    return { start, setItems, isActive: () => state.active };
   }
 
   function focusInput(el) {
@@ -335,47 +333,24 @@
   });
 
   // ---- Practice game (Jamo) ----------------------------------------------
-  // Two answer modes:
-  //  - keys:  type the 2-set (두벌식) IME keys — the same keys a standard
-  //           Microsoft/Google Korean IME expects.
-  //  - roman: type the official romanization.
-  let practiceMode = 'keys';
-
+  // Answers are Dubeolsik (두벌식) IME keys — the same keys a standard
+  // Microsoft/Google Korean IME expects.
   const practiceGame = makeGame({
     items: JAMO,
     len: PRACTICE_LEN,
-    answerOf: (j) => (practiceMode === 'keys' ? KEYS_2SET[j.char] : j.roman),
-    isKeyAnswer: () => practiceMode === 'keys',
+    answerOf: (j) => KEYS_2SET[j.char],
     keyTextOf: (j) => j.char,
-    displayOf: (j) => {
-      $('p-jamo').textContent = j.char;
-      $('p-roman').textContent = practiceMode === 'keys' ? j.roman : KEYS_2SET[j.char];
-    },
-    hintOf: (j) => practiceMode === 'keys'
-      ? j.type + '  ·  ' + j.hint
-      : j.type,
+    displayOf: (j) => { $('p-jamo').textContent = j.char; },
+    hintOf: (j) => j.type + '  ·  ' + j.hint,
     scoreEl: $('p-score'),
     streakEl: $('p-streak'),
     progressEl: $('p-progress'),
     inputEl: $('p-input'),
     feedbackEl: $('p-feedback'),
     stageEl: $('p-stage'),
-    startBtn: $('p-start'),
     skipBtn: $('p-skip'),
     onDone: (s) => showResults('Practice', s),
   });
-
-  function setPracticeMode(mode) {
-    practiceMode = mode;
-    $('p-mode-keys').classList.toggle('active', mode === 'keys');
-    $('p-mode-roman').classList.toggle('active', mode === 'roman');
-    $('p-prompt').textContent = mode === 'keys'
-      ? 'Type the 2-set key(s) for this Jamo'
-      : 'Type the romanization for this Jamo';
-    practiceGame.reset();
-  }
-  $('p-mode-keys').addEventListener('click', () => setPracticeMode('keys'));
-  $('p-mode-roman').addEventListener('click', () => setPracticeMode('roman'));
 
   // ---- Words game ---------------------------------------------------------
   // Answers are the 2-set key sequence for the whole word.
@@ -383,7 +358,6 @@
     items: WORDS,
     len: WORDS_LEN,
     answerOf: (it) => keys2setHangul(it.w),
-    isKeyAnswer: () => true,
     keyTextOf: (it) => it.w,
     displayOf: (it) => { $('w-word').textContent = it.w; },
     hintOf: (it) => 'sounds like “' + romanizeHangul(it.w) + '”',
@@ -393,16 +367,16 @@
     inputEl: $('w-input'),
     feedbackEl: $('w-feedback'),
     stageEl: $('w-stage'),
-    startBtn: $('w-start'),
     skipBtn: $('w-skip'),
     onDone: (s) => showResults('Words', s),
   });
 
   // ---- Selection → practice ----------------------------------------------
+  // Starts the session directly — no Start button.
   $('practice-selected').addEventListener('click', () => {
     if (!selected.size) return;
     const items = JAMO.filter((j) => selected.has(j.char));
-    practiceGame.setItems(items);
+    practiceGame.setItems(items); // starts the session immediately
     showView('practice');
   });
   $('clear-selected').addEventListener('click', () => {
