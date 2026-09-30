@@ -244,6 +244,23 @@ test('matches2set is case-sensitive for regular keys', () => {
   assert.ok(!d.matches2set(han, 'gksS')); // trailing junk (S = ㄴ)
 });
 
+test('matches2set works for standalone Jamo (practice mode)', () => {
+  // Practice items are single jamo characters, not composed syllables —
+  // they must match against their own keys, not pass through unchanged.
+  assert.ok(d.matches2set('ㅂ', 'q'));
+  assert.ok(!d.matches2set('ㅅ', 'q')); // q is ㅂ, not ㅅ
+  assert.ok(d.matches2set('ㅃ', 'Q'));   // Shift+letter
+  assert.ok(d.matches2set('ㅃ', 'qq'));  // doubled-key alias
+  assert.ok(!d.matches2set('ㅃ', 'q'));
+  assert.ok(d.matches2set('ㅘ', 'hk'));  // compound vowel as a sequence
+  assert.ok(d.matches2set('ㅒ', 'O'));
+  assert.ok(d.matches2set('ㅒ', 'il'));
+  assert.ok(!d.matches2set('ㅔ', 'P'));  // P is ㅖ, not ㅔ
+  // keys2setHangul resolves standalone jamo to their key too.
+  assert.strictEqual(d.keys2setHangul('ㄷ'), 'e'); // ㄱ (tieut) is on E
+  assert.strictEqual(d.keys2setHangul('ㅅ'), 't');
+});
+
 test('non-Hangul characters pass through unchanged', () => {
   assert.strictEqual(d.romanizeHangul('abc 123'), 'abc 123');
 });

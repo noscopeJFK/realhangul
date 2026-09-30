@@ -182,11 +182,17 @@ const KEY_ALIASES = {
   'ㅒ': ['il'], 'ㅖ': ['pl'],
 };
 
-// All valid 2-set key sequences for one syllable (canonical keys plus
-// every alias combination).
+// All valid key sequences for one character: a composed syllable (its
+// jamo's keys, every alias combination) or a standalone Jamo (its own
+// key plus aliases). Non-Hangul characters pass through unchanged.
 function keySequencesSyllable(ch) {
   const parts = decomposeSyllable(ch);
-  if (!parts) return [ch]; // not a composed syllable
+  if (!parts) {
+    if (Object.prototype.hasOwnProperty.call(KEYS_2SET, ch)) {
+      return [KEYS_2SET[ch], ...(KEY_ALIASES[ch] || [])];
+    }
+    return [ch]; // not Hangul
+  }
   const jamo = [parts.initial, parts.vowel];
   if (parts.final) jamo.push(parts.final);
   let out = [''];
@@ -213,10 +219,13 @@ function matches2set(text, typed) {
   return ok(0, t);
 }
 
-// 2-set key sequence for a single Hangul syllable (initial + vowel + final).
+// 2-set key sequence for one character: a composed syllable (initial +
+// vowel + final) or a standalone Jamo. Non-Hangul passes through.
 function keys2setSyllable(ch) {
   const parts = decomposeSyllable(ch);
-  if (!parts) return ch; // not a composed syllable
+  if (!parts) {
+    return Object.prototype.hasOwnProperty.call(KEYS_2SET, ch) ? KEYS_2SET[ch] : ch;
+  }
   let keys = (KEYS_2SET[parts.initial] || '') + (KEYS_2SET[parts.vowel] || '');
   if (parts.final) keys += KEYS_2SET[parts.final] || '';
   return keys;
