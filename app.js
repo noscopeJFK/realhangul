@@ -58,8 +58,7 @@
     { w: '할', m: 'will do' },
   ];
 
-  const PRACTICE_LEN = 20; // Jamo per practice session
-  const WORDS_LEN = 10;    // words per words session
+  const WORDS_LEN = 10; // words per words session
 
   // ---- DOM refs -----------------------------------------------------------
   const $ = (id) => document.getElementById(id);
@@ -136,6 +135,9 @@
   function makeGame(cfg) {
     // cfg: { items, answerOf, displayOf, hintOf, keyTextOf, scoreEl, streakEl,
     //        progressEl, inputEl, feedbackEl, stageEl, skipBtn, len, onDone }
+    // Optional repeatEach: every item in the pool appears that many times per
+    // session; missed items are re-queued to come up again soon, while correct
+    // ones keep only their remaining base appearances (later in the queue).
     // There is no Start button — start()/setItems() begin a session immediately.
     const state = {
       items: [],
@@ -146,6 +148,7 @@
       correct: 0,
       wrong: 0,
       mistakes: [],
+      appearances: new Map(),
       active: false,
       answered: false,
     };
@@ -159,8 +162,30 @@
       return a;
     }
 
+    // Session queue. With repeatEach set (practice), every item in the pool
+    // appears that many times; otherwise a random slice of cfg.len items.
+    function buildQueue() {
+      if (cfg.repeatEach) {
+        const q = [];
+        for (const it of cfg.items) {
+          for (let k = 0; k < cfg.repeatEach; k++) q.push(it);
+        }
+        return shuffle(q);
+      }
+      return shuffle(cfg.items).slice(0, cfg.len);
+    }
+
+    // A missed item comes back a couple of questions later. Capped so a
+    // stubborn item can't stretch the session forever.
+    function rescheduleSoon(item) {
+      const max = cfg.repeatEach + 3;
+      if ((state.appearances.get(item) || 0) >= max) return;
+      state.items.splice(Math.min(state.idx + 2, state.items.length - 1), 0, item);
+    }
+
     function reset() {
-      state.items = shuffle(cfg.items).slice(0, cfg.len);
+      state.items = buildQueue();
+      state.appearances = new Map();
       state.idx = 0;
       state.score = 0;
       state.streak = 0;
@@ -225,6 +250,7 @@
       const typed = cfg.inputEl.value.trim();
       if (!typed) return;
       state.answered = true;
+      state.appearances.set(item, (state.appearances.get(item) || 0) + 1);
       const ok = isCorrect(item, typed);
       if (ok) {
         state.score += 1;
@@ -238,6 +264,7 @@
         state.streak = 0;
         state.wrong += 1;
         state.mistakes.push({ item, expected, typed });
+        if (cfg.repeatEach) rescheduleSoon(item);
         cfg.inputEl.className = 'answer-input wrong';
         cfg.feedbackEl.textContent = '✗ It’s “' + fmtKeys(expected) + '”';
         cfg.feedbackEl.className = 'feedback bad';
@@ -260,9 +287,11 @@
       if (!state.active || state.answered) return;
       const item = state.items[state.idx];
       const expected = cfg.answerOf(item);
+      state.appearances.set(item, (state.appearances.get(item) || 0) + 1);
       state.streak = 0;
       state.wrong += 1;
       state.mistakes.push({ item, expected, typed: '(skipped)' });
+      if (cfg.repeatEach) rescheduleSoon(item);
       updateHud();
       setTimeout(next, 350);
     }
@@ -344,7 +373,7 @@
   // Answers are the key sequences of the layout in 1.png (see KEYS_2SET).
   const practiceGame = makeGame({
     items: JAMO,
-    len: PRACTICE_LEN,
+    repeatEach: 3, // every jamo shown at least 3 times; misses come back sooner
     answerOf: (j) => KEYS_2SET[j.char],
     keyTextOf: (j) => j.char,
     displayOf: (j) => { $('p-jamo').textContent = j.char; },
